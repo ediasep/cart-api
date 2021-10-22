@@ -1,0 +1,22 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Cart API",
+        "version": "0.1"
+    },
+    "paths": {
+        "/carts": {
+            "get": {
+                "operationId": "bf4fcfa5c4963324af8f7c4709190694",
+                "responses": {
+                    "200": {
+                        "description": "Display all carts item."
+                    }
+                }
+            }
+        }
+    },
+    "security": [
+        []
+    ]
+}

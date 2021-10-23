@@ -5,12 +5,134 @@
         "version": "0.1"
     },
     "paths": {
-        "/carts": {
+        "/api/carts/": {
             "get": {
-                "operationId": "bf4fcfa5c4963324af8f7c4709190694",
+                "operationId": "1234070ca95586baae9a97d1275b3eeb",
+                "parameters": [
+                    {
+                        "name": "user_id",
+                        "in": "query",
+                        "description": "You can find valid user_id from user api",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
-                        "description": "Display all carts item."
+                        "description": "Success"
+                    }
+                }
+            },
+            "delete": {
+                "operationId": "d7d78a0452c1f59766038bdf30be1a64",
+                "parameters": [
+                    {
+                        "name": "cart_id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    },
+                    "404": {
+                        "description": "Cart item not found"
+                    },
+                    "403": {
+                        "description": "Internal server error"
+                    }
+                }
+            }
+        },
+        "/api/carts/add": {
+            "post": {
+                "operationId": "63226e7921e303b4de2c8a41ab077f09",
+                "parameters": [
+                    {
+                        "name": "user_id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "name": "product_id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "name": "quantity",
+                        "in": "query",
+                        "description": "You are only able to add item to cart if only the quantity not exceed stock reduced by reserved quantity",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                }
+            }
+        },
+        "/api/carts/update": {
+            "put": {
+                "operationId": "dc3a7119f4a20098f71102afabaeeb22",
+                "parameters": [
+                    {
+                        "name": "cart_id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "name": "quantity",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                }
+            }
+        },
+        "/api/carts/checkout": {
+            "patch": {
+                "operationId": "c5d99f64a4c56d3bfb05288d5e7f4b7d",
+                "parameters": [
+                    {
+                        "name": "cart_id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    },
+                    "404": {
+                        "description": "Cart item not found"
+                    },
+                    "403": {
+                        "description": "Internal server error"
+                    }
+                }
+            }
+        },
+        "/api/products/": {
+            "get": {
+                "operationId": "c98ca8808a2163d50d2dab3d7062a432",
+                "responses": {
+                    "200": {
+                        "description": "Display all products"
+                    }
+                }
+            }
+        },
+        "/api/users/": {
+            "get": {
+                "operationId": "da52e0652a921c82fdc0b47e089dab67",
+                "responses": {
+                    "200": {
+                        "description": "Display all users"
                     }
                 }
             }

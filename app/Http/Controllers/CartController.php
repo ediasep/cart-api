@@ -50,8 +50,20 @@ class CartController extends Controller
             'quantity' => 'required'
         ]);
 
-        // insert into database
-        $cart = Cart::create($request->all());
+        // get related product by product id
+        $product = Product::find($request->product_id);
+
+        if($product->stock < $request->quantity) {
+            return response('Stock not available, try lower product quantity', 400);
+        }
+
+        try {
+            // insert into database
+            $cart = Cart::create(array_merge($request->all(), ['product_version' => $product->version, 'product_stock' => $product->stock]));
+
+        } catch (Exception $e) {
+            
+        }
 
         return response()->json($cart);
     }
@@ -76,12 +88,17 @@ class CartController extends Controller
             // get cart item by id
             $cart = Cart::find($request->cart_id);
 
+            // check if cart exists
+            if(empty($cart)) {
+                return response('Cart not found', 404);
+            }
+
             // update cart item
             $cart->update([
                 'quantity' => intval($request->quantity)
             ]);
         } catch (Exception $e) {
-            return response('Failed', 403);
+            return response('Internal server error', 500);
         }
 
         return response()->json($cart);
@@ -92,7 +109,7 @@ class CartController extends Controller
      *     path="/api/carts/",
      *     @OA\Response(response="200", description="Success"),
      *     @OA\Response(response="404", description="Cart item not found"),
-     *     @OA\Response(response="403", description="Internal server error"),
+     *     @OA\Response(response="500", description="Internal server error"),
      *     @OA\Parameter(in="query", name="cart_id", required=true),
      * )
      */
@@ -106,7 +123,7 @@ class CartController extends Controller
         try {
             $cart->delete();
         } catch (Exception $e) {
-            return response('internal server error', 403);
+            return response('internal server error', 500);
         }
 
         return response('success', 200);    
@@ -117,7 +134,8 @@ class CartController extends Controller
      *     path="/api/carts/checkout",
      *     @OA\Response(response="200", description="Success"),
      *     @OA\Response(response="404", description="Cart item not found"),
-     *     @OA\Response(response="403", description="Internal server error"),
+     *     @OA\Response(response="500", description="Internal server error"),
+     *     @OA\Response(response="409", description="Resource conflict, out of stock"),
      *     @OA\Parameter(in="query", name="cart_id", required=true),
      * )
      */
@@ -129,25 +147,32 @@ class CartController extends Controller
             return response('Cart not found', 404);
         }
 
-        $product = Product::find($cart->product_id);
-
+        $product = Product::find($cart->product_id); // For validation only
         if(empty($product)) {
             return response('Product not found, probably it has been deleted', 404);
         }
-
-        if($product->stock < intval($cart->quantity)) {
-            return response('Product stock is not enough / less than quantity needed');
-        }
         
         /* For this proof of concept, checkout process will only update the product stock and delete item from cart. In reality, a separate transaction table will exists and record will added to that table during checkout */
+
         try {
-            $product->update([
-                'stock' => $product->stock - intval($cart->quantity)
-            ]);
+            $affected = Product::where('id', '=', $cart->product_id)
+                  ->where('stock', '=', $cart->product_stock)
+                  ->where('version', '=', $cart->product_version)
+                  // sometimes users hold cart for long time. In that case, it's convenient to use below filter instead
+                  // ->where('stock' , '>=', $cart->quantity)
+                  ->update([
+                        'stock' => $product->stock - intval($cart->quantity),
+                        'version' => $product->version + 1
+                    ]);
+
+            // affected 0 mean there is no record updated, it will be caused by product out of stock
+            if($affected == 0) {
+                return response('checkout failed, expired data', 409);
+            }
 
             $cart->delete();
         } catch (Exception $e) {
-            return response('internal server error', 403);
+            return response('internal server error', 500);
         }
 
         return response('success', 200);    

@@ -25,11 +25,12 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 Route::get('carts', [CartController::class, 'show_user_cart']);
 Route::post('carts/add', [CartController::class, 'add_to_cart']);
 Route::put('carts/update', [CartController::class, 'update_cart']);
-Route::delete('carts', [CartController::class, 'remove_from_cart']);
+Route::delete('carts/delete', [CartController::class, 'remove_from_cart']);
 Route::patch('carts/checkout', [CartController::class, 'checkout']);
 
 // Product
 Route::get('products', [ProductController::class, 'index']);
+Route::get('products/show', [ProductController::class, 'show']);
 
 // User
 Route::get('users', [UserController::class, 'index']);
